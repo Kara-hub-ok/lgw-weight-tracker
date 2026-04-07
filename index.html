@@ -192,6 +192,17 @@
     font-size: 1.1em;
   }
   .no-data .emoji { font-size: 3em; margin-bottom: 16px; }
+
+  /* Meal gallery */
+  .meal-card { padding: 14px; margin: 10px 0; }
+  .meal-card .meal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .meal-card .meal-label { font-size: 0.9em; font-weight: 700; color: #e91e63; }
+  .meal-card .meal-cal { font-size: 0.85em; font-weight: 600; color: #ad1457; }
+  .meal-card .meal-photo { width: 100%; border-radius: 12px; margin-bottom: 10px; object-fit: cover; max-height: 300px; }
+  .meal-card .meal-items { font-size: 0.82em; color: #4a2040; line-height: 1.6; }
+  .meal-card .meal-macros { display: flex; gap: 12px; margin-top: 8px; font-size: 0.75em; color: #ad1457; flex-wrap: wrap; }
+  .meal-card .meal-macros span { background: rgba(233,30,99,0.08); padding: 2px 8px; border-radius: 6px; }
+  .no-meals { text-align: center; padding: 30px; color: #c2185b; font-size: 0.9em; }
 </style>
 </head>
 <body>
@@ -249,6 +260,45 @@
   <canvas id="weightChart" height="200"></canvas>
 </div>
 
+<div class="section-title">🍽️ 今日饮食</div>
+<div id="todayMeals"></div>
+<div class="today-summary glass-strong" id="todaySummary" style="display:none; padding:16px; margin:10px 0;">
+  <div class="stats" style="margin:0;">
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">总热量</div>
+      <div class="value" id="todayCal">--</div>
+      <div class="sub">kcal</div>
+    </div>
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">蛋白质</div>
+      <div class="value" id="todayP">--</div>
+      <div class="sub">g</div>
+    </div>
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">碳水</div>
+      <div class="value" id="todayC">--</div>
+      <div class="sub">g</div>
+    </div>
+  </div>
+  <div class="stats" style="margin:8px 0 0;">
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">脂肪</div>
+      <div class="value" id="todayF">--</div>
+      <div class="sub">g</div>
+    </div>
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">纤维</div>
+      <div class="value" id="todayFiber">--</div>
+      <div class="sub">g</div>
+    </div>
+    <div class="stat-card" style="padding:10px;">
+      <div class="label">餐次</div>
+      <div class="value" id="todayCount">--</div>
+      <div class="sub">次</div>
+    </div>
+  </div>
+</div>
+
 <div class="section-title">📊 每周汇总</div>
 <div class="weekly" id="weeklyCards"></div>
 
@@ -267,6 +317,11 @@
 <script>
 // ===== LGW 的数据 =====
 // 每次更新在这里添加记录即可
+
+// 饮食数据：每条记录包含日期、餐次、食物、照片、营养信息
+const MEALS = [
+  // { date: '2026-04-08', meal: '午餐', items: '黄焖鸡米饭', photo: 'photos/2026-04-08_午餐.jpg', cal: 650, protein: 28, carbs: 75, fat: 25, fiber: 3 },
+];
 const DATA = [
   { date: '2026-04-07', weight: 103.8, exercise: '', note: '起始' },
 ];
@@ -445,6 +500,44 @@ DATA.forEach(d => {
   `;
   tbody.appendChild(tr);
 });
+
+// Today's meals
+const today = new Date().toISOString().slice(0, 10);
+const todayMeals = MEALS.filter(m => m.date === today);
+const mealsEl = document.getElementById('todayMeals');
+
+if (todayMeals.length === 0) {
+  mealsEl.innerHTML = '<div class="no-meals glass">今天还没有饮食记录 🍽️</div>';
+} else {
+  document.getElementById('todaySummary').style.display = 'block';
+  let tCal = 0, tP = 0, tC = 0, tF = 0, tFiber = 0;
+  todayMeals.forEach(m => {
+    tCal += m.cal || 0; tP += m.protein || 0; tC += m.carbs || 0; tF += m.fat || 0; tFiber += m.fiber || 0;
+    const card = document.createElement('div');
+    card.className = 'meal-card glass';
+    card.innerHTML = `
+      <div class="meal-header">
+        <span class="meal-label">${m.meal}</span>
+        <span class="meal-cal">${m.cal} kcal</span>
+      </div>
+      ${m.photo ? `<img class="meal-photo" src="${m.photo}" alt="${m.items}" loading="lazy">` : ''}
+      <div class="meal-items">${m.items}</div>
+      <div class="meal-macros">
+        <span>蛋白质 ${m.protein}g</span>
+        <span>碳水 ${m.carbs}g</span>
+        <span>脂肪 ${m.fat}g</span>
+        ${m.fiber ? `<span>纤维 ${m.fiber}g</span>` : ''}
+      </div>
+    `;
+    mealsEl.appendChild(card);
+  });
+  document.getElementById('todayCal').textContent = tCal;
+  document.getElementById('todayP').textContent = tP;
+  document.getElementById('todayC').textContent = tC;
+  document.getElementById('todayF').textContent = tF;
+  document.getElementById('todayFiber').textContent = tFiber;
+  document.getElementById('todayCount').textContent = todayMeals.length;
+}
 </script>
 </body>
 </html>
