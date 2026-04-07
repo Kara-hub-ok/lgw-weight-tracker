@@ -203,6 +203,25 @@
   .meal-card .meal-macros { display: flex; gap: 12px; margin-top: 8px; font-size: 0.75em; color: #ad1457; flex-wrap: wrap; }
   .meal-card .meal-macros span { background: rgba(233,30,99,0.08); padding: 2px 8px; border-radius: 6px; }
   .no-meals { text-align: center; padding: 30px; color: #c2185b; font-size: 0.9em; }
+
+  /* Tabs */
+  .tabs { display: flex; border-radius: 16px 16px 0 0; overflow: hidden; margin-top: 24px; margin-bottom: 0; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .tab { flex: 1; text-align: center; padding: 14px; font-size: 0.9em; font-weight: 600; color: #ad1457; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.3); }
+  .tab.active { background: rgba(255,255,255,0.6); color: #e91e63; border-bottom: 2px solid #e91e63; }
+  .tab:not(.active):hover { background: rgba(255,255,255,0.45); }
+  .tab-content { margin-bottom: 20px; }
+
+  /* Diet history */
+  .diet-day { margin: 16px 0; padding: 16px; }
+  .diet-day-header { font-size: 1em; font-weight: 700; color: #e91e63; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .diet-day-header .day-cal { font-size: 0.85em; color: #ad1457; font-weight: 600; }
+  .diet-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .diet-gallery img { width: 100%; border-radius: 10px; object-fit: cover; aspect-ratio: 1; cursor: pointer; transition: transform 0.2s; }
+  .diet-gallery img:hover { transform: scale(1.03); }
+  .diet-detail-table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+  .diet-detail-table th { background: rgba(233,30,99,0.1); color: #ad1457; padding: 8px 6px; text-align: center; font-weight: 600; }
+  .diet-detail-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid rgba(233,30,99,0.06); }
+  .diet-detail-table tr:last-child td { border-bottom: none; font-weight: 700; color: #e91e63; }
 </style>
 </head>
 <body>
@@ -302,14 +321,24 @@
 <div class="section-title">📊 每周汇总</div>
 <div class="weekly" id="weeklyCards"></div>
 
-<div class="section-title">📋 每日明细</div>
-<div class="table-wrap glass-strong">
+<div class="tabs glass-strong">
+  <div class="tab active" data-tab="weight">📋 每日明细</div>
+  <div class="tab" data-tab="diet">🍽️ 每日饮食</div>
+</div>
+
+<div class="tab-content" id="tab-weight">
+<div class="table-wrap glass-strong" style="margin-top:0; border-top-left-radius:0; border-top-right-radius:0;">
 <table>
   <thead>
     <tr><th>日期</th><th>星期</th><th>体重</th><th>变化</th><th>运动</th><th>备注</th></tr>
   </thead>
   <tbody id="tableBody"></tbody>
 </table>
+</div>
+</div>
+
+<div class="tab-content" id="tab-diet" style="display:none;">
+<div id="dietHistory"></div>
 </div>
 
 <div class="footer">Tony 😏 为 LGW 定制 · 数据由小涵授权管理</div>
@@ -537,6 +566,60 @@ if (todayMeals.length === 0) {
   document.getElementById('todayF').textContent = tF;
   document.getElementById('todayFiber').textContent = tFiber;
   document.getElementById('todayCount').textContent = todayMeals.length;
+}
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+  });
+});
+
+// Diet history (all days)
+const dietEl = document.getElementById('dietHistory');
+if (MEALS.length === 0) {
+  dietEl.innerHTML = '<div class="no-meals glass" style="margin:10px 0;">还没有饮食记录 🍽️</div>';
+} else {
+  const dayMap = {};
+  MEALS.forEach(m => {
+    if (!dayMap[m.date]) dayMap[m.date] = [];
+    dayMap[m.date].push(m);
+  });
+  Object.keys(dayMap).sort().reverse().forEach(date => {
+    const meals = dayMap[date];
+    const dayCal = meals.reduce((s, m) => s + (m.cal || 0), 0);
+    const dayP = meals.reduce((s, m) => s + (m.protein || 0), 0);
+    const dayC = meals.reduce((s, m) => s + (m.carbs || 0), 0);
+    const dayF = meals.reduce((s, m) => s + (m.fat || 0), 0);
+    const dayFi = meals.reduce((s, m) => s + (m.fiber || 0), 0);
+    const div = document.createElement('div');
+    div.className = 'diet-day glass';
+
+    const photos = meals.filter(m => m.photo).map(m =>
+      `<img src="${m.photo}" alt="${m.items}" loading="lazy">`
+    ).join('');
+
+    const rows = meals.map(m =>
+      `<tr><td>${m.meal}</td><td>${m.items}</td><td>${m.cal}</td><td>${m.protein}</td><td>${m.carbs}</td><td>${m.fat}</td></tr>`
+    ).join('');
+
+    div.innerHTML = `
+      <div class="diet-day-header">
+        <span>${fmt(date)} 星期${dayOfWeek(date)}</span>
+        <span class="day-cal">${dayCal} kcal</span>
+      </div>
+      ${photos ? `<div class="diet-gallery">${photos}</div>` : ''}
+      <table class="diet-detail-table">
+        <tr><th>餐次</th><th>食物</th><th>热量</th><th>蛋白质</th><th>碳水</th><th>脂肪</th></tr>
+        ${rows}
+        <tr><td>合计</td><td></td><td>${dayCal}</td><td>${dayP}g</td><td>${dayC}g</td><td>${dayF}g</td></tr>
+      </table>
+    `;
+    dietEl.appendChild(div);
+  });
 }
 </script>
 </body>
