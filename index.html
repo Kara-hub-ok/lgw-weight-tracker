@@ -10,9 +10,9 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 30%, #f48fb1 60%, #fce4ec 100%);
     background-attachment: fixed;
-    color: #e0e0e0;
+    color: #4a2040;
     padding: 16px;
     max-width: 800px;
     margin: 0 auto;
@@ -25,9 +25,9 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle at 20% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(72, 149, 239, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(255, 165, 0, 0.05) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 20%, rgba(244, 143, 177, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(129, 199, 132, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(244, 143, 177, 0.08) 0%, transparent 50%);
     z-index: -1;
     animation: float 20s ease-in-out infinite;
   }
@@ -42,27 +42,27 @@
     margin: 20px 0;
     font-size: 1.6em;
     font-weight: 700;
-    background: linear-gradient(135deg, #e94560, #ff6b6b, #e94560);
+    background: linear-gradient(135deg, #e91e63, #f48fb1, #e91e63);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .glass {
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.7);
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
   }
   .glass-strong {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
   }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
@@ -72,23 +72,23 @@
     transition: transform 0.2s ease;
   }
   .stat-card:hover { transform: translateY(-2px); }
-  .stat-card .label { font-size: 0.78em; color: #888; font-weight: 500; letter-spacing: 0.5px; }
+  .stat-card .label { font-size: 0.78em; color: #ad1457; font-weight: 500; letter-spacing: 0.5px; }
   .stat-card .value {
     font-size: 1.6em;
     font-weight: 800;
     margin-top: 4px;
-    background: linear-gradient(135deg, #4895ef, #56cfe1);
+    background: linear-gradient(135deg, #e91e63, #f06292);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .stat-card .value.accent {
-    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    background: linear-gradient(135deg, #4caf50, #81c784);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .stat-card .sub { font-size: 0.72em; color: #666; margin-top: 3px; }
+  .stat-card .sub { font-size: 0.72em; color: #c2185b; margin-top: 3px; }
 
   .chart-container {
     padding: 20px 16px;
@@ -98,7 +98,7 @@
   .section-title {
     font-size: 1.05em;
     font-weight: 700;
-    color: #4895ef;
+    color: #e91e63;
     margin: 24px 0 12px;
     letter-spacing: 0.5px;
   }
@@ -110,11 +110,11 @@
     transition: transform 0.2s ease;
   }
   .week-card:hover { transform: translateY(-2px); }
-  .week-card .wk { font-size: 0.78em; color: #888; }
+  .week-card .wk { font-size: 0.78em; color: #ad1457; }
   .week-card .wv {
     font-size: 1.3em;
     font-weight: 800;
-    background: linear-gradient(135deg, #4895ef, #56cfe1);
+    background: linear-gradient(135deg, #e91e63, #f06292);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -128,7 +128,7 @@
   }
   table { width: 100%; border-collapse: collapse; }
   th {
-    background: linear-gradient(135deg, rgba(72, 149, 239, 0.8), rgba(86, 207, 225, 0.8));
+    background: linear-gradient(135deg, rgba(233, 30, 99, 0.85), rgba(240, 98, 146, 0.85));
     backdrop-filter: blur(10px);
     color: #fff;
     padding: 12px 8px;
@@ -145,44 +145,44 @@
     background: transparent;
   }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(72, 149, 239, 0.06); }
+  tr:hover td { background: rgba(233, 30, 99, 0.04); }
 
   .weight-down { color: #27ae60; font-weight: 700; }
   .weight-up { color: #e74c3c; font-weight: 700; }
-  .weight-same { color: #666; }
+  .weight-same { color: #c2185b; }
   .exercise-tag {
     display: inline-block;
-    background: linear-gradient(135deg, rgba(72,149,239,0.15), rgba(86,207,225,0.15));
-    color: #56cfe1;
+    background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(76,175,80,0.12));
+    color: #4caf50;
     padding: 3px 8px;
     border-radius: 8px;
     font-size: 0.75em;
     font-weight: 500;
-    border: 1px solid rgba(72,149,239,0.15);
+    border: 1px solid rgba(233,30,99,0.15);
   }
 
   .footer {
     text-align: center;
-    color: #555;
+    color: #ad1457;
     font-size: 0.72em;
     margin: 24px 0;
     letter-spacing: 0.5px;
   }
 
   .progress-wrap { margin: 16px 0; padding: 16px 20px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 0.8em; color: #888; margin-bottom: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.8em; color: #ad1457; margin-bottom: 8px; }
   .progress-bar {
     height: 10px;
     border-radius: 10px;
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.15);
     overflow: hidden;
   }
   .progress-fill {
     height: 100%;
     border-radius: 10px;
-    background: linear-gradient(90deg, #56cfe1, #4895ef, #e94560);
+    background: linear-gradient(90deg, #f06292, #e91e63, #4caf50);
     transition: width 1s ease;
-    box-shadow: 0 2px 8px rgba(72,149,239,0.3);
+    box-shadow: 0 2px 8px rgba(233,30,99,0.3);
   }
 
   .no-data {
@@ -196,7 +196,7 @@
 </head>
 <body>
 
-<h1>🔥 LGW 的体重记录</h1>
+<h1>⭐ LGW 的体重记录</h1>
 
 <div class="stats">
   <div class="stat-card glass">
@@ -319,20 +319,20 @@ if (withWeight.length < 1) {
 
   const gradient = document.getElementById('weightChart').getContext('2d');
   const gFill = gradient.createLinearGradient(0, 0, 0, 300);
-  gFill.addColorStop(0, 'rgba(72, 149, 239, 0.25)');
-  gFill.addColorStop(1, 'rgba(72, 149, 239, 0.02)');
+  gFill.addColorStop(0, 'rgba(233, 30, 99, 0.25)');
+  gFill.addColorStop(1, 'rgba(233, 30, 99, 0.02)');
 
   const datasets = [
     {
       label: '体重 (kg)',
       data: chartData,
-      borderColor: '#4895ef',
+      borderColor: '#e91e63',
       backgroundColor: gFill,
       fill: true,
       tension: 0.4,
       borderWidth: 2.5,
       pointBackgroundColor: '#fff',
-      pointBorderColor: '#4895ef',
+      pointBorderColor: '#e91e63',
       pointBorderWidth: 2,
       pointRadius: 4,
       pointHoverRadius: 8,
@@ -343,7 +343,7 @@ if (withWeight.length < 1) {
     datasets.push({
       label: '目标 ' + GOAL + 'kg',
       data: Array(chartLabels.length).fill(GOAL),
-      borderColor: 'rgba(233, 69, 96, 0.4)',
+      borderColor: 'rgba(76, 175, 80, 0.4)',
       borderDash: [6, 4],
       borderWidth: 1.5,
       pointRadius: 0,
@@ -357,12 +357,12 @@ if (withWeight.length < 1) {
     options: {
       responsive: true,
       plugins: {
-        legend: { display: true, position: 'top', labels: { font: { size: 11 }, color: '#aaa', usePointStyle: true, padding: 16 } },
+        legend: { display: true, position: 'top', labels: { font: { size: 11 }, color: '#ad1457', usePointStyle: true, padding: 16 } },
         tooltip: {
-          backgroundColor: 'rgba(30,30,50,0.9)',
-          titleColor: '#eee',
-          bodyColor: '#bbb',
-          borderColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: 'rgba(255,240,245,0.95)',
+          titleColor: '#880e4f',
+          bodyColor: '#ad1457',
+          borderColor: 'rgba(233,30,99,0.2)',
           borderWidth: 1,
           cornerRadius: 10,
           padding: 12,
@@ -383,11 +383,11 @@ if (withWeight.length < 1) {
         y: {
           min: GOAL ? Math.floor(GOAL - 1) : Math.floor(last.weight - 2),
           max: Math.ceil(first.weight + 0.5),
-          ticks: { callback: v => v + 'kg', font: { size: 11 }, color: '#888' },
+          ticks: { callback: v => v + 'kg', font: { size: 11 }, color: '#c2185b' },
           grid: { color: 'rgba(255,255,255,0.04)' }
         },
         x: {
-          ticks: { font: { size: 10 }, maxRotation: 45, color: '#888' },
+          ticks: { font: { size: 10 }, maxRotation: 45, color: '#c2185b' },
           grid: { display: false }
         }
       }
