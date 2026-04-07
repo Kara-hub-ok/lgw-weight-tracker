@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LGW 的体重记录 🔥</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+    background-attachment: fixed;
+    color: #e0e0e0;
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 20% 20%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(72, 149, 239, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 165, 0, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    animation: float 20s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(20px, -20px) rotate(1deg); }
+    66% { transform: translate(-10px, 15px) rotate(-1deg); }
+  }
+
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.6em;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e94560, #ff6b6b, #e94560);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+  .stat-card {
+    padding: 16px 10px;
+    text-align: center;
+    transition: transform 0.2s ease;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card .label { font-size: 0.78em; color: #888; font-weight: 500; letter-spacing: 0.5px; }
+  .stat-card .value {
+    font-size: 1.6em;
+    font-weight: 800;
+    margin-top: 4px;
+    background: linear-gradient(135deg, #4895ef, #56cfe1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-card .value.accent {
+    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-card .sub { font-size: 0.72em; color: #666; margin-top: 3px; }
+
+  .chart-container {
+    padding: 20px 16px;
+    margin: 16px 0;
+  }
+
+  .section-title {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: #4895ef;
+    margin: 24px 0 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .weekly { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+  .week-card {
+    padding: 14px;
+    text-align: center;
+    transition: transform 0.2s ease;
+  }
+  .week-card:hover { transform: translateY(-2px); }
+  .week-card .wk { font-size: 0.78em; color: #888; }
+  .week-card .wv {
+    font-size: 1.3em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #4895ef, #56cfe1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 4px 0;
+  }
+
+  .table-wrap {
+    padding: 0;
+    overflow: hidden;
+    margin: 0 0 20px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: linear-gradient(135deg, rgba(72, 149, 239, 0.8), rgba(86, 207, 225, 0.8));
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 12px 8px;
+    font-size: 0.82em;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 0.84em;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: transparent;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(72, 149, 239, 0.06); }
+
+  .weight-down { color: #27ae60; font-weight: 700; }
+  .weight-up { color: #e74c3c; font-weight: 700; }
+  .weight-same { color: #666; }
+  .exercise-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(72,149,239,0.15), rgba(86,207,225,0.15));
+    color: #56cfe1;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 0.75em;
+    font-weight: 500;
+    border: 1px solid rgba(72,149,239,0.15);
+  }
+
+  .footer {
+    text-align: center;
+    color: #555;
+    font-size: 0.72em;
+    margin: 24px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-wrap { margin: 16px 0; padding: 16px 20px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.8em; color: #888; margin-bottom: 8px; }
+  .progress-bar {
+    height: 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #56cfe1, #4895ef, #e94560);
+    transition: width 1s ease;
+    box-shadow: 0 2px 8px rgba(72,149,239,0.3);
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 1.1em;
+  }
+  .no-data .emoji { font-size: 3em; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>🔥 LGW 的体重记录</h1>
+
+<div class="stats">
+  <div class="stat-card glass">
+    <div class="label">起始体重</div>
+    <div class="value" id="startW">--</div>
+    <div class="sub" id="startDate"></div>
+  </div>
+  <div class="stat-card glass">
+    <div class="label">今日体重</div>
+    <div class="value" id="currentW">--</div>
+    <div class="sub" id="currentDate"></div>
+  </div>
+  <div class="stat-card glass">
+    <div class="label">已减</div>
+    <div class="value" id="totalLoss">--</div>
+    <div class="sub" id="totalDays"></div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-card glass">
+    <div class="label">目标</div>
+    <div class="value accent" id="goalW">--</div>
+    <div class="sub" id="goalDate"></div>
+  </div>
+  <div class="stat-card glass">
+    <div class="label">距目标</div>
+    <div class="value accent" id="toGoal">--</div>
+    <div class="sub">还差</div>
+  </div>
+  <div class="stat-card glass">
+    <div class="label">周均减重</div>
+    <div class="value" id="weeklyAvg">--</div>
+    <div class="sub">kg/周</div>
+  </div>
+</div>
+
+<div class="progress-wrap glass">
+  <div class="progress-label">
+    <span id="pStart">--</span>
+    <span id="pPercent">0%</span>
+    <span id="pGoal">--</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+</div>
+
+<div class="chart-container glass-strong">
+  <canvas id="weightChart" height="200"></canvas>
+</div>
+
+<div class="section-title">📊 每周汇总</div>
+<div class="weekly" id="weeklyCards"></div>
+
+<div class="section-title">📋 每日明细</div>
+<div class="table-wrap glass-strong">
+<table>
+  <thead>
+    <tr><th>日期</th><th>星期</th><th>体重</th><th>变化</th><th>运动</th><th>备注</th></tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<div class="footer">Tony 😏 为 LGW 定制 · 数据由小涵授权管理</div>
+
+<script>
+// ===== LGW 的数据 =====
+// 每次更新在这里添加记录即可
+const DATA = [
+  // { date: '2026-04-07', weight: null, exercise: '', note: '建档' },
+];
+
+const GOAL = null; // LGW 的目标体重，待设置
+const GOAL_DATE = ''; // 目标日期，待设置
+
+// ===== 以下为渲染逻辑 =====
+const DAYS = ['日','一','二','三','四','五','六'];
+function dayOfWeek(d) { return DAYS[new Date(d).getDay()]; }
+function fmt(d) { return d.slice(5).replace('-','/'); }
+function diffDays(a, b) { return Math.round((new Date(b)-new Date(a))/86400000); }
+
+const withWeight = DATA.filter(d => d.weight !== null);
+
+if (withWeight.length < 1) {
+  document.getElementById('weeklyCards').innerHTML = '<div class="no-data glass"><div class="emoji">📝</div>还没有数据<br>LGW 快来报体重吧</div>';
+} else {
+  const first = withWeight[0];
+  const last = withWeight[withWeight.length - 1];
+  const days = diffDays(first.date, last.date);
+  const loss = first.weight - last.weight;
+  const weeks = days / 7 || 1;
+
+  document.getElementById('startW').textContent = first.weight.toFixed(1);
+  document.getElementById('startDate').textContent = fmt(first.date);
+  document.getElementById('currentW').textContent = last.weight.toFixed(1);
+  document.getElementById('currentDate').textContent = fmt(last.date);
+  document.getElementById('totalLoss').textContent = (loss >= 0 ? '-' : '+') + Math.abs(loss).toFixed(1) + 'kg';
+  document.getElementById('totalDays').textContent = days + '天';
+  document.getElementById('weeklyAvg').textContent = (loss / weeks).toFixed(2);
+
+  if (GOAL !== null) {
+    document.getElementById('goalW').textContent = GOAL.toFixed(1);
+    document.getElementById('goalDate').textContent = GOAL_DATE;
+    document.getElementById('toGoal').textContent = (last.weight - GOAL).toFixed(1) + 'kg';
+
+    const totalToLose = first.weight - GOAL;
+    const lost = first.weight - last.weight;
+    const pct = totalToLose > 0 ? Math.min(100, (lost / totalToLose * 100)).toFixed(0) : 0;
+    document.getElementById('pStart').textContent = first.weight.toFixed(1);
+    document.getElementById('pGoal').textContent = GOAL.toFixed(1);
+    document.getElementById('pPercent').textContent = pct + '%';
+    setTimeout(() => { document.getElementById('progressFill').style.width = pct + '%'; }, 100);
+  }
+
+  // Chart
+  const chartLabels = withWeight.map(d => fmt(d.date));
+  const chartData = withWeight.map(d => d.weight);
+
+  const gradient = document.getElementById('weightChart').getContext('2d');
+  const gFill = gradient.createLinearGradient(0, 0, 0, 300);
+  gFill.addColorStop(0, 'rgba(72, 149, 239, 0.25)');
+  gFill.addColorStop(1, 'rgba(72, 149, 239, 0.02)');
+
+  const datasets = [
+    {
+      label: '体重 (kg)',
+      data: chartData,
+      borderColor: '#4895ef',
+      backgroundColor: gFill,
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2.5,
+      pointBackgroundColor: '#fff',
+      pointBorderColor: '#4895ef',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 8,
+    }
+  ];
+
+  if (GOAL !== null) {
+    datasets.push({
+      label: '目标 ' + GOAL + 'kg',
+      data: Array(chartLabels.length).fill(GOAL),
+      borderColor: 'rgba(233, 69, 96, 0.4)',
+      borderDash: [6, 4],
+      borderWidth: 1.5,
+      pointRadius: 0,
+      fill: false,
+    });
+  }
+
+  new Chart(document.getElementById('weightChart'), {
+    type: 'line',
+    data: { labels: chartLabels, datasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { size: 11 }, color: '#aaa', usePointStyle: true, padding: 16 } },
+        tooltip: {
+          backgroundColor: 'rgba(30,30,50,0.9)',
+          titleColor: '#eee',
+          bodyColor: '#bbb',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          cornerRadius: 10,
+          padding: 12,
+          callbacks: {
+            afterLabel: function(ctx) {
+              if (ctx.datasetIndex === 0) {
+                const d = withWeight[ctx.dataIndex];
+                let s = '';
+                if (d.exercise) s += '🏃 ' + d.exercise;
+                if (d.note) s += (s ? '\n' : '') + d.note;
+                return s;
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: GOAL ? Math.floor(GOAL - 1) : Math.floor(last.weight - 2),
+          max: Math.ceil(first.weight + 0.5),
+          ticks: { callback: v => v + 'kg', font: { size: 11 }, color: '#888' },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        x: {
+          ticks: { font: { size: 10 }, maxRotation: 45, color: '#888' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  // Weekly cards
+  function getWeekNum(dateStr) { return Math.floor(diffDays(DATA[0].date, dateStr) / 7); }
+  const weekMap = {};
+  withWeight.forEach(d => {
+    const wk = getWeekNum(d.date);
+    if (!weekMap[wk]) weekMap[wk] = [];
+    weekMap[wk].push(d);
+  });
+  const weeklyEl = document.getElementById('weeklyCards');
+  Object.keys(weekMap).sort((a,b) => a-b).forEach(wk => {
+    const entries = weekMap[wk];
+    const wStart = entries[0].weight;
+    const wEnd = entries[entries.length-1].weight;
+    const wLoss = wStart - wEnd;
+    const card = document.createElement('div');
+    card.className = 'week-card glass';
+    card.innerHTML = `
+      <div class="wk">第${parseInt(wk)+1}周</div>
+      <div class="wv">${wLoss >= 0 ? '-' : '+'}${Math.abs(wLoss).toFixed(1)}kg</div>
+      <div class="wk">${wStart.toFixed(1)} → ${wEnd.toFixed(1)}</div>
+    `;
+    weeklyEl.appendChild(card);
+  });
+}
+
+// Table
+const tbody = document.getElementById('tableBody');
+let prevWeight = null;
+DATA.forEach(d => {
+  const tr = document.createElement('tr');
+  let changeHtml = '<span class="weight-same">-</span>';
+  if (d.weight !== null) {
+    if (prevWeight !== null) {
+      const diff = d.weight - prevWeight;
+      if (diff < 0) changeHtml = `<span class="weight-down">${diff.toFixed(1)}</span>`;
+      else if (diff > 0) changeHtml = `<span class="weight-up">+${diff.toFixed(1)}</span>`;
+      else changeHtml = `<span class="weight-same">0</span>`;
+    }
+    prevWeight = d.weight;
+  }
+  const exerciseHtml = d.exercise ? `<span class="exercise-tag">${d.exercise}</span>` : '';
+  tr.innerHTML = `
+    <td>${fmt(d.date)}</td>
+    <td>${dayOfWeek(d.date)}</td>
+    <td style="font-weight:600">${d.weight !== null ? d.weight.toFixed(1) : '-'}</td>
+    <td>${changeHtml}</td>
+    <td>${exerciseHtml}</td>
+    <td>${d.note || ''}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
