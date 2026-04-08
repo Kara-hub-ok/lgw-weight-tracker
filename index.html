@@ -373,6 +373,7 @@
 
 // Daily targets
 const DAILY_TARGET = { cal: 1750, protein: 160, carbs: 165, fat: 50 };
+function f(n) { return Number(n).toFixed(1); }
 const MEALS = [
   { date: '2026-04-08', meal: '早餐 9:00', items: '南航空厨混合坚果 25g', photo: 'photos/2026-04-08_零食_混合坚果.jpg', cal: 140, protein: 4, carbs: 8, fat: 10, fiber: 1.5 },
   { date: '2026-04-08', meal: '早餐 9:00', items: '生可可燕麦高纤GI饼干 ~30g', photo: 'photos/2026-04-08_零食_高纤饼干.jpg', cal: 135, protein: 2, carbs: 20, fat: 5, fiber: 3 },
@@ -600,14 +601,14 @@ function buildCarousel(wrapEl, trackEl, dotsEl, grouped) {
       : g.photos.length > 1
         ? `<div class="cc-collage cc-collage-${Math.min(g.photos.length, 4)}">${g.photos.slice(0, 4).map(p => `<img src="${p}" alt="${g.meal}" loading="lazy">`).join('')}</div>`
         : '';
-    const itemsHtml = g.items.map(i => `<div class="cc-item"><span>${i.name}</span><span>${i.cal} kcal</span></div>`).join('');
+    const itemsHtml = g.items.map(i => `<div class="cc-item"><span>${i.name}</span><span>${f(i.cal)} kcal</span></div>`).join('');
     card.innerHTML = `
-      <div class="cc-header"><span class="cc-meal">${g.meal}</span><span class="cc-cal">${g.cal} kcal</span></div>
+      <div class="cc-header"><span class="cc-meal">${g.meal}</span><span class="cc-cal">${f(g.cal)} kcal</span></div>
       ${photoHtml}
       <div class="cc-items">${itemsHtml}</div>
       <div class="cc-macros">
-        <span>蛋白质 ${g.protein}g</span><span>碳水 ${g.carbs}g</span><span>脂肪 ${g.fat}g</span>
-        ${g.fiber ? `<span>纤维 ${g.fiber}g</span>` : ''}
+        <span>蛋白质 ${f(g.protein)}g</span><span>碳水 ${f(g.carbs)}g</span><span>脂肪 ${f(g.fat)}g</span>
+        ${g.fiber ? `<span>纤维 ${f(g.fiber)}g</span>` : ''}
       </div>
     `;
     trackEl.appendChild(card);
@@ -661,15 +662,15 @@ if (todayMeals.length === 0) {
   document.getElementById('todaySummary').style.display = 'block';
   let tCal = 0, tP = 0, tC = 0, tF = 0, tFiber = 0;
   todayMeals.forEach(m => { tCal += m.cal||0; tP += m.protein||0; tC += m.carbs||0; tF += m.fat||0; tFiber += m.fiber||0; });
-  document.getElementById('todayCal').textContent = tCal;
+  document.getElementById('todayCal').textContent = f(tCal);
   document.getElementById('todayCalTarget').textContent = `/ ${DAILY_TARGET.cal} kcal`;
-  document.getElementById('todayP').textContent = tP;
+  document.getElementById('todayP').textContent = f(tP);
   document.getElementById('todayPTarget').textContent = `/ ${DAILY_TARGET.protein}g`;
-  document.getElementById('todayC').textContent = tC;
+  document.getElementById('todayC').textContent = f(tC);
   document.getElementById('todayCTarget').textContent = `/ ${DAILY_TARGET.carbs}g`;
-  document.getElementById('todayF').textContent = tF;
+  document.getElementById('todayF').textContent = f(tF);
   document.getElementById('todayFTarget').textContent = `/ ${DAILY_TARGET.fat}g`;
-  document.getElementById('todayFiber').textContent = tFiber;
+  document.getElementById('todayFiber').textContent = f(tFiber);
   document.getElementById('todayCount').textContent = grouped.length;
 }
 
@@ -701,7 +702,7 @@ if (MEALS.length === 0) {
       <div class="diet-day-header">
         <span>${fmt(date)} 星期${dayOfWeek(date)}</span>
         <span style="display:flex;align-items:center;gap:8px;">
-          <span class="day-cal">${dayCal} kcal</span>
+          <span class="day-cal">${f(dayCal)} kcal</span>
           <span class="toggle-icon">›</span>
         </span>
       </div>
