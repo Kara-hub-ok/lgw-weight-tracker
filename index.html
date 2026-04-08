@@ -193,15 +193,22 @@
   }
   .no-data .emoji { font-size: 3em; margin-bottom: 16px; }
 
-  /* Meal gallery */
-  .meal-card { padding: 14px; margin: 10px 0; }
-  .meal-card .meal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .meal-card .meal-label { font-size: 0.9em; font-weight: 700; color: #e91e63; }
-  .meal-card .meal-cal { font-size: 0.85em; font-weight: 600; color: #ad1457; }
-  .meal-card .meal-photo { width: 100%; border-radius: 12px; margin-bottom: 10px; object-fit: cover; max-height: 300px; }
-  .meal-card .meal-items { font-size: 0.82em; color: #4a2040; line-height: 1.6; }
-  .meal-card .meal-macros { display: flex; gap: 12px; margin-top: 8px; font-size: 0.75em; color: #ad1457; flex-wrap: wrap; }
-  .meal-card .meal-macros span { background: rgba(233,30,99,0.08); padding: 2px 8px; border-radius: 6px; }
+  /* Carousel */
+  .carousel-wrap { position: relative; overflow: hidden; margin: 10px 0; }
+  .carousel-track { display: flex; transition: transform 0.35s ease; touch-action: pan-y; }
+  .carousel-card { min-width: 100%; box-sizing: border-box; padding: 16px; }
+  .carousel-card .cc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .carousel-card .cc-meal { font-size: 1em; font-weight: 700; color: #e91e63; }
+  .carousel-card .cc-cal { font-size: 0.9em; font-weight: 600; color: #ad1457; }
+  .carousel-card .cc-photo { width: 100%; border-radius: 12px; margin-bottom: 12px; object-fit: cover; max-height: 280px; }
+  .carousel-card .cc-items { margin-bottom: 10px; }
+  .carousel-card .cc-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85em; color: #4a2040; border-bottom: 1px solid rgba(233,30,99,0.06); }
+  .carousel-card .cc-item:last-child { border-bottom: none; }
+  .carousel-card .cc-macros { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .carousel-card .cc-macros span { background: rgba(233,30,99,0.08); padding: 3px 10px; border-radius: 8px; font-size: 0.78em; color: #ad1457; font-weight: 500; }
+  .carousel-dots { display: flex; justify-content: center; gap: 8px; padding: 12px 0; }
+  .carousel-dots .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(233,30,99,0.2); cursor: pointer; transition: all 0.2s; }
+  .carousel-dots .dot.active { background: #e91e63; transform: scale(1.3); }
   .no-meals { text-align: center; padding: 30px; color: #c2185b; font-size: 0.9em; }
 
   /* Tabs */
@@ -280,7 +287,10 @@
 </div>
 
 <div class="section-title">🍽️ 今日饮食</div>
-<div id="todayMeals"></div>
+<div class="carousel-wrap" id="todayCarousel">
+  <div class="carousel-track" id="todayTrack"></div>
+  <div class="carousel-dots" id="todayDots"></div>
+</div>
 <div class="today-summary glass-strong" id="todaySummary" style="display:none; padding:16px; margin:10px 0;">
   <div class="stats" style="margin:0;">
     <div class="stat-card" style="padding:10px;">
@@ -537,42 +547,83 @@ DATA.forEach(d => {
   tbody.appendChild(tr);
 });
 
-// Today's meals
-const today = new Date().toISOString().slice(0, 10);
-const todayMeals = MEALS.filter(m => m.date === today);
-const mealsEl = document.getElementById('todayMeals');
+// Group meals by meal name for carousel (merge items of same meal into one card)
+function groupMeals(meals) {
+  const map = {};
+  meals.forEach(m => {
+    const key = m.meal;
+    if (!map[key]) map[key] = { meal: m.meal, items: [], photos: [], cal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    map[key].items.push({ name: m.items, cal: m.cal });
+    if (m.photo) map[key].photos.push(m.photo);
+    map[key].cal += m.cal || 0;
+    map[key].protein += m.protein || 0;
+    map[key].carbs += m.carbs || 0;
+    map[key].fat += m.fat || 0;
+    map[key].fiber += m.fiber || 0;
+  });
+  return Object.values(map);
+}
 
-if (todayMeals.length === 0) {
-  mealsEl.innerHTML = '<div class="no-meals glass">今天还没有饮食记录 🍽️</div>';
-} else {
-  document.getElementById('todaySummary').style.display = 'block';
-  let tCal = 0, tP = 0, tC = 0, tF = 0, tFiber = 0;
-  todayMeals.forEach(m => {
-    tCal += m.cal || 0; tP += m.protein || 0; tC += m.carbs || 0; tF += m.fat || 0; tFiber += m.fiber || 0;
+function buildCarousel(trackEl, dotsEl, grouped) {
+  let idx = 0;
+  grouped.forEach(g => {
     const card = document.createElement('div');
-    card.className = 'meal-card glass';
+    card.className = 'carousel-card glass';
+    const photoHtml = g.photos.length ? `<img class="cc-photo" src="${g.photos[0]}" alt="${g.meal}" loading="lazy">` : '';
+    const itemsHtml = g.items.map(i => `<div class="cc-item"><span>${i.name}</span><span>${i.cal} kcal</span></div>`).join('');
     card.innerHTML = `
-      <div class="meal-header">
-        <span class="meal-label">${m.meal}</span>
-        <span class="meal-cal">${m.cal} kcal</span>
-      </div>
-      ${m.photo ? `<img class="meal-photo" src="${m.photo}" alt="${m.items}" loading="lazy">` : ''}
-      <div class="meal-items">${m.items}</div>
-      <div class="meal-macros">
-        <span>蛋白质 ${m.protein}g</span>
-        <span>碳水 ${m.carbs}g</span>
-        <span>脂肪 ${m.fat}g</span>
-        ${m.fiber ? `<span>纤维 ${m.fiber}g</span>` : ''}
+      <div class="cc-header"><span class="cc-meal">${g.meal}</span><span class="cc-cal">${g.cal} kcal</span></div>
+      ${photoHtml}
+      <div class="cc-items">${itemsHtml}</div>
+      <div class="cc-macros">
+        <span>蛋白质 ${g.protein}g</span><span>碳水 ${g.carbs}g</span><span>脂肪 ${g.fat}g</span>
+        ${g.fiber ? `<span>纤维 ${g.fiber}g</span>` : ''}
       </div>
     `;
-    mealsEl.appendChild(card);
+    trackEl.appendChild(card);
   });
+  // dots
+  grouped.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsEl.appendChild(dot);
+  });
+  function goTo(i) {
+    idx = i;
+    trackEl.style.transform = `translateX(-${i * 100}%)`;
+    dotsEl.querySelectorAll('.dot').forEach((d, j) => d.classList.toggle('active', j === i));
+  }
+  // swipe
+  let startX = 0;
+  trackEl.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+  trackEl.addEventListener('touchend', e => {
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) goTo(Math.max(0, Math.min(grouped.length - 1, idx + (diff > 0 ? 1 : -1))));
+  });
+}
+
+// Today's meals carousel
+const today = new Date().toISOString().slice(0, 10);
+const todayMeals = MEALS.filter(m => m.date === today);
+const todayTrack = document.getElementById('todayTrack');
+const todayDots = document.getElementById('todayDots');
+const todayCarousel = document.getElementById('todayCarousel');
+
+if (todayMeals.length === 0) {
+  todayCarousel.innerHTML = '<div class="no-meals glass">今天还没有饮食记录 🍽️</div>';
+} else {
+  const grouped = groupMeals(todayMeals);
+  buildCarousel(todayTrack, todayDots, grouped);
+  document.getElementById('todaySummary').style.display = 'block';
+  let tCal = 0, tP = 0, tC = 0, tF = 0, tFiber = 0;
+  todayMeals.forEach(m => { tCal += m.cal||0; tP += m.protein||0; tC += m.carbs||0; tF += m.fat||0; tFiber += m.fiber||0; });
   document.getElementById('todayCal').textContent = tCal;
   document.getElementById('todayP').textContent = tP;
   document.getElementById('todayC').textContent = tC;
   document.getElementById('todayF').textContent = tF;
   document.getElementById('todayFiber').textContent = tFiber;
-  document.getElementById('todayCount').textContent = todayMeals.length;
+  document.getElementById('todayCount').textContent = grouped.length;
 }
 
 // Tab switching
@@ -585,47 +636,29 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// Diet history (all days)
+// Diet history (all days) - carousel per day
 const dietEl = document.getElementById('dietHistory');
 if (MEALS.length === 0) {
   dietEl.innerHTML = '<div class="no-meals glass" style="margin:10px 0;">还没有饮食记录 🍽️</div>';
 } else {
   const dayMap = {};
-  MEALS.forEach(m => {
-    if (!dayMap[m.date]) dayMap[m.date] = [];
-    dayMap[m.date].push(m);
-  });
+  MEALS.forEach(m => { if (!dayMap[m.date]) dayMap[m.date] = []; dayMap[m.date].push(m); });
   Object.keys(dayMap).sort().reverse().forEach(date => {
     const meals = dayMap[date];
     const dayCal = meals.reduce((s, m) => s + (m.cal || 0), 0);
-    const dayP = meals.reduce((s, m) => s + (m.protein || 0), 0);
-    const dayC = meals.reduce((s, m) => s + (m.carbs || 0), 0);
-    const dayF = meals.reduce((s, m) => s + (m.fat || 0), 0);
-    const dayFi = meals.reduce((s, m) => s + (m.fiber || 0), 0);
-    const div = document.createElement('div');
-    div.className = 'diet-day glass';
+    const grouped = groupMeals(meals);
 
-    const photos = meals.filter(m => m.photo).map(m =>
-      `<img src="${m.photo}" alt="${m.items}" loading="lazy">`
-    ).join('');
-
-    const rows = meals.map(m =>
-      `<tr><td>${m.meal}</td><td>${m.items}</td><td>${m.cal}</td><td>${m.protein}</td><td>${m.carbs}</td><td>${m.fat}</td></tr>`
-    ).join('');
-
-    div.innerHTML = `
+    const section = document.createElement('div');
+    section.className = 'diet-day glass';
+    section.innerHTML = `
       <div class="diet-day-header">
         <span>${fmt(date)} 星期${dayOfWeek(date)}</span>
         <span class="day-cal">${dayCal} kcal</span>
       </div>
-      ${photos ? `<div class="diet-gallery">${photos}</div>` : ''}
-      <table class="diet-detail-table">
-        <tr><th>餐次</th><th>食物</th><th>热量</th><th>蛋白质</th><th>碳水</th><th>脂肪</th></tr>
-        ${rows}
-        <tr><td>合计</td><td></td><td>${dayCal}</td><td>${dayP}g</td><td>${dayC}g</td><td>${dayF}g</td></tr>
-      </table>
+      <div class="carousel-wrap"><div class="carousel-track"></div><div class="carousel-dots"></div></div>
     `;
-    dietEl.appendChild(div);
+    dietEl.appendChild(section);
+    buildCarousel(section.querySelector('.carousel-track'), section.querySelector('.carousel-dots'), grouped);
   });
 }
 </script>
