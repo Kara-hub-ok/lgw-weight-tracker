@@ -230,9 +230,12 @@
   .tab-content { margin-bottom: 20px; }
 
   /* Diet history */
-  .diet-day { margin: 16px 0; padding: 16px; }
-  .diet-day-header { font-size: 1em; font-weight: 700; color: #e91e63; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-  .diet-day-header .day-cal { font-size: 0.85em; color: #ad1457; font-weight: 600; }
+  .diet-day { margin: 8px 0; padding: 0; overflow: hidden; }
+  .diet-day-header { font-size: 0.9em; font-weight: 600; color: #ad1457; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+  .diet-day-header .day-cal { font-size: 0.85em; color: #e91e63; font-weight: 600; }
+  .diet-day-header .toggle-icon { font-size: 0.8em; color: #e91e63; transition: transform 0.2s; }
+  .diet-day-header .toggle-icon.open { transform: rotate(90deg); }
+  .diet-day-body { display: none; padding: 0 16px 16px; }
   .diet-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
   .diet-gallery img { width: 100%; border-radius: 10px; object-fit: cover; aspect-ratio: 1; cursor: pointer; transition: transform 0.2s; }
   .diet-gallery img:hover { transform: scale(1.03); }
@@ -686,13 +689,29 @@ if (MEALS.length === 0) {
     section.innerHTML = `
       <div class="diet-day-header">
         <span>${fmt(date)} 星期${dayOfWeek(date)}</span>
-        <span class="day-cal">${dayCal} kcal</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="day-cal">${dayCal} kcal</span>
+          <span class="toggle-icon">›</span>
+        </span>
       </div>
-      <div class="carousel-wrap"><div class="carousel-track"></div><div class="carousel-dots"></div></div>
+      <div class="diet-day-body">
+        <div class="carousel-wrap"><div class="carousel-track"></div><div class="carousel-dots"></div></div>
+      </div>
     `;
+    const header = section.querySelector('.diet-day-header');
+    const body = section.querySelector('.diet-day-body');
+    const icon = section.querySelector('.toggle-icon');
+    header.addEventListener('click', () => {
+      const open = body.style.display === 'block';
+      body.style.display = open ? 'none' : 'block';
+      icon.classList.toggle('open', !open);
+      if (!body.dataset.init) {
+        const cWrap = body.querySelector('.carousel-wrap');
+        buildCarousel(cWrap, cWrap.querySelector('.carousel-track'), cWrap.querySelector('.carousel-dots'), grouped);
+        body.dataset.init = '1';
+      }
+    });
     dietEl.appendChild(section);
-    const cWrap = section.querySelector('.carousel-wrap');
-    buildCarousel(cWrap, cWrap.querySelector('.carousel-track'), cWrap.querySelector('.carousel-dots'), grouped);
   });
 }
 </script>
