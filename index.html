@@ -298,33 +298,29 @@
 </div>
 
 <div class="section-title">🍽️ 今日饮食</div>
-<div class="carousel-wrap" id="todayCarousel">
-  <div class="carousel-track" id="todayTrack"></div>
-  <div class="carousel-dots" id="todayDots"></div>
-</div>
 <div class="today-summary glass-strong" id="todaySummary" style="display:none; padding:16px; margin:10px 0;">
   <div class="stats" style="margin:0;">
     <div class="stat-card" style="padding:10px;">
       <div class="label">总热量</div>
       <div class="value" id="todayCal">--</div>
-      <div class="sub">kcal</div>
+      <div class="sub"><span id="todayCalTarget"></span></div>
     </div>
     <div class="stat-card" style="padding:10px;">
       <div class="label">蛋白质</div>
       <div class="value" id="todayP">--</div>
-      <div class="sub">g</div>
+      <div class="sub"><span id="todayPTarget"></span></div>
     </div>
     <div class="stat-card" style="padding:10px;">
       <div class="label">碳水</div>
       <div class="value" id="todayC">--</div>
-      <div class="sub">g</div>
+      <div class="sub"><span id="todayCTarget"></span></div>
     </div>
   </div>
   <div class="stats" style="margin:8px 0 0;">
     <div class="stat-card" style="padding:10px;">
       <div class="label">脂肪</div>
       <div class="value" id="todayF">--</div>
-      <div class="sub">g</div>
+      <div class="sub"><span id="todayFTarget"></span></div>
     </div>
     <div class="stat-card" style="padding:10px;">
       <div class="label">纤维</div>
@@ -337,6 +333,10 @@
       <div class="sub">次</div>
     </div>
   </div>
+</div>
+<div class="carousel-wrap" id="todayCarousel">
+  <div class="carousel-track" id="todayTrack"></div>
+  <div class="carousel-dots" id="todayDots"></div>
 </div>
 
 <div class="section-title">📊 每周汇总</div>
@@ -368,7 +368,8 @@
 // ===== LGW 的数据 =====
 // 每次更新在这里添加记录即可
 
-// 饮食数据：每条记录包含日期、餐次、食物、照片、营养信息
+// Daily targets
+const DAILY_TARGET = { cal: 1750, protein: 160, carbs: 165, fat: 50 };
 const MEALS = [
   { date: '2026-04-08', meal: '早餐 9:00', items: '南航空厨混合坚果 25g', photo: 'photos/2026-04-08_零食_混合坚果.jpg', cal: 140, protein: 4, carbs: 8, fat: 10, fiber: 1.5 },
   { date: '2026-04-08', meal: '早餐 9:00', items: '生可可燕麦高纤GI饼干 ~30g', photo: 'photos/2026-04-08_零食_高纤饼干.jpg', cal: 135, protein: 2, carbs: 20, fat: 5, fiber: 3 },
@@ -647,9 +648,13 @@ if (todayMeals.length === 0) {
   let tCal = 0, tP = 0, tC = 0, tF = 0, tFiber = 0;
   todayMeals.forEach(m => { tCal += m.cal||0; tP += m.protein||0; tC += m.carbs||0; tF += m.fat||0; tFiber += m.fiber||0; });
   document.getElementById('todayCal').textContent = tCal;
+  document.getElementById('todayCalTarget').textContent = `/ ${DAILY_TARGET.cal} kcal`;
   document.getElementById('todayP').textContent = tP;
+  document.getElementById('todayPTarget').textContent = `/ ${DAILY_TARGET.protein}g`;
   document.getElementById('todayC').textContent = tC;
+  document.getElementById('todayCTarget').textContent = `/ ${DAILY_TARGET.carbs}g`;
   document.getElementById('todayF').textContent = tF;
+  document.getElementById('todayFTarget').textContent = `/ ${DAILY_TARGET.fat}g`;
   document.getElementById('todayFiber').textContent = tFiber;
   document.getElementById('todayCount').textContent = grouped.length;
 }
